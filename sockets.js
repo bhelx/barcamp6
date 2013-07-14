@@ -1,7 +1,19 @@
-var models = require('./models')
+var mongoose = require('mongoose')
+  , models   = require('./models')
+  , Tweet   = models.Tweet
 ;
 
 module.exports = function(io) {
+
+  var stream = Tweet.find().tailable().limit(10).stream();
+
+  stream.on('error', function (err) {
+    console.error(err)
+  });
+
+  stream.on('data', function (doc) {
+    io.emit("ontweet", doc);
+  });
 
   io.configure('production', function (){
     io.set("transports", ["xhr-polling"]);
@@ -10,7 +22,7 @@ module.exports = function(io) {
   });
 
   io.configure('development', function (){
-
+    // whatever!!!
   });
 
   io.sockets.on('connection', function(socket) {

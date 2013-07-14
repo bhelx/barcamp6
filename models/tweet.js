@@ -9,6 +9,8 @@ var TweetSchema = new Schema({
   , text       : String
   , user       : Number
   , tags       : [String]
+}, {
+  capped: { size: 1024, max: 1000, autoIndexId: true }
 });
 
 TweetSchema.statics.build = function (twitter_obj) {
