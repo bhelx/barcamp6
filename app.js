@@ -8,17 +8,20 @@ var express         = require('express')
   , partials        = require('express-partials')
   , io              = require('socket.io')
   , mongoose        = require('mongoose')
+  , User            = require('./models').User
   ;
 
 var TWITTER_CONSUMER_KEY = process.env.TWITTER_CONSUMER_KEY;
 var TWITTER_CONSUMER_SECRET = process.env.TWITTER_CONSUMER_SECRET;
 
 passport.serializeUser(function(user, done) {
-  done(null, user);
+  done(null, user.uid);
 });
 
-passport.deserializeUser(function(obj, done) {
-  done(null, obj);
+passport.deserializeUser(function(uid, done) {
+  User.findOne({uid: uid}, function (err, user) {
+    done(err, user);
+  });
 });
 
 passport.use(new TwitterStrategy({
@@ -27,14 +30,20 @@ passport.use(new TwitterStrategy({
     callbackURL: "http://"+process.env.DOMAIN+"/auth/twitter/callback"
   },
   function(token, tokenSecret, profile, done) {
-    // asynchronous verification, for effect...
-    process.nextTick(function () {
-
-      // To keep the example simple, the user's Twitter profile is returned to
-      // represent the logged-in user. In a typical application, you would want
-      // to associate the Twitter account with a user record in your database,
-      // and return that user instead.
-      return done(null, profile);
+    User.findOne({uid: profile.id}, function(err, user) {
+      if (user) {
+        done(null, user);
+      } else {
+        var user = new User();
+        user.provider = "twitter";
+        user.uid = profile.id;
+        user.name = profile.displayName;
+        user.image = profile._json.profile_image_url;
+        user.save(function(err) {
+          if(err) { throw err; }
+          done(null, user);
+        });
+      }
     });
   }
 ));
