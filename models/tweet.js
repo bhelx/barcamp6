@@ -28,18 +28,55 @@ TweetSchema.statics.build = function (twitter_obj) {
   return self;
 };
 
-
-TweetSchema.statics.tagStats = function (done) {
-  this.aggregate(
+TweetSchema.statics.topFiveTags = function (done) {
+  Tweet.aggregate(
     { $project: { tags: 1 } },
     { $unwind: "$tags" },
     { $project: { tags: { $toLower: "$tags"} } },
     { $group: { _id: "$tags", count: { $sum: 1 } } },
     { $sort: { count: -1 } },
-    { $limit : 10 },
+    { $limit: 5},
     done
   );
 };
+
+TweetSchema.statics.topFiveTagsNormalized = function (done) {
+   this.topFiveTags(function(err,tags) {
+      var totalTweats = 0;
+      for (var i = 0; i < tags.length; i++) {
+        totalTweats += tags[i].count;
+      }
+      for (var i = 0; i < tags.length; i++) {
+        tags[i].count = tags[i].count / totalTweats;
+      }
+      done(err,tags);     
+    });
+}
+
+TweetSchema.statics.topFiveTagsFiltered = function (hashTags, done) {
+  Tweet.aggregate(
+    { $project: { tags: 1 } },
+    { $unwind: "$tags" },
+    { $match: { tags: { $in: hashTags} } },
+    { $group: { _id: "$tags", count: { $sum: 1 } } },
+    { $sort: { count: -1 } },
+    { $limit: 5},
+    done
+  );
+}
+
+TweetSchema.statics.topFiveTagsNormalizedFiltered = function (hashTags, done) {
+   this.topFiveTagsFiltered(hashTags, function(err,tags) {
+      var totalTweats = 0;
+      for (var i = 0; i < tags.length; i++) {
+        totalTweats += tags[i].count;
+      }
+      for (var i = 0; i < tags.length; i++) {
+        tags[i].count = tags[i].count / totalTweats;
+      }
+      done(err,tags);     
+    });
+}
 
 TweetSchema.statics.tagLeaderboard = function (tag,done) {
   this.aggregate(
@@ -48,12 +85,9 @@ TweetSchema.statics.tagLeaderboard = function (tag,done) {
     { $match: { tags: tag } },
     { $group: { _id : "$user", count: { $sum: 1 } } },
     { $sort: { count: -1 } },
-    { $limit : 3 },
+    { $limit: 5 },
     done
   );
 }
 
-
-
 module.exports = mongoose.model('Tweet', TweetSchema);
-
