@@ -1,24 +1,31 @@
-var express         = require('express')
-  , routes          = require('./routes')
-  , http            = require('http')
-  , path            = require('path')
-  , sass            = require('node-sass')
-  , passport        = require('passport')
-  , TwitterStrategy = require('passport-twitter').Strategy
-  , partials        = require('express-partials')
-  , io              = require('socket.io')
-  , mongoose        = require('mongoose')
+var express           = require('express')
+  , routes            = require('./routes')
+  , http              = require('http')
+  , path              = require('path')
+  , sass              = require('node-sass')
+  , passport          = require('passport')
+  , TwitterStrategy   = require('passport-twitter').Strategy
+  , partials          = require('express-partials')
+  , io                = require('socket.io')
+  , mongoose          = require('mongoose')
+  , socketIo          = require('socket.io')
+  , connectAssets     = require("connect-assets")
+  , sockets           = require('./sockets')
+  , models            = require('./models')
+  , User              = models.User
   ;
 
 var TWITTER_CONSUMER_KEY = process.env.TWITTER_CONSUMER_KEY;
 var TWITTER_CONSUMER_SECRET = process.env.TWITTER_CONSUMER_SECRET;
 
 passport.serializeUser(function(user, done) {
-  done(null, user);
+  done(null, user.uid);
 });
 
-passport.deserializeUser(function(obj, done) {
-  done(null, obj);
+passport.deserializeUser(function(uid, done) {
+  User.findOne({uid: uid}, function (err, user) {
+    done(err, user);
+  });
 });
 
 passport.use(new TwitterStrategy({
@@ -27,14 +34,20 @@ passport.use(new TwitterStrategy({
     callbackURL: "http://"+process.env.DOMAIN+"/auth/twitter/callback"
   },
   function(token, tokenSecret, profile, done) {
-    // asynchronous verification, for effect...
-    process.nextTick(function () {
-
-      // To keep the example simple, the user's Twitter profile is returned to
-      // represent the logged-in user. In a typical application, you would want
-      // to associate the Twitter account with a user record in your database,
-      // and return that user instead.
-      return done(null, profile);
+    User.findOne({uid: profile.id}, function(err, user) {
+      if (user) {
+        done(null, user);
+      } else {
+        var user = new User();
+        user.provider = "twitter";
+        user.uid = profile.id;
+        user.name = profile.displayName;
+        user.image = profile._json.profile_image_url;
+        user.save(function(err) {
+          if(err) { throw err; }
+          done(null, user);
+        });
+      }
     });
   }
 ));
@@ -46,7 +59,7 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
   app.use(
     sass.middleware({
-        src         : __dirname + '/sass'
+        src         : __dirname + '/assets/sass'
       , dest        : __dirname + '/public'
       , debug       : true
       , force       : true
@@ -57,8 +70,7 @@ if ('development' == app.get('env')) {
 // all environments
 app.set('port', process.env.PORT || 3000);
 app.set('views', __dirname + '/views');
-app.set('view engine', 'ejs');
-app.use(partials()); // ejs partials
+app.set('view engine', 'jade');
 app.use(express.favicon());
 app.use(express.logger('dev'));
 app.use(express.cookieParser(process.env.COOKIE_SECRET || 'barcampz'));
@@ -70,8 +82,11 @@ app.use(passport.session());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
+// use the connect assets middleware for Snockets sugar
+app.use(connectAssets());
+
 app.get('/', function(req, res){
-  res.render('index', { user: req.user, layout: 'layout' });
+  res.render('index', { user: req.user });
 });
 
 function ensureAuthenticated(req, res, next) {
@@ -80,11 +95,11 @@ function ensureAuthenticated(req, res, next) {
 }
 
 app.get('/account', ensureAuthenticated, function(req, res){
-  res.render('account', { user: req.user, layout: 'layout' });
+  res.render('account', { user: req.user });
 });
 
 app.get('/login', function(req, res){
-  res.render('login', { user: req.user, layout: 'layout' });
+  res.render('login', { user: req.user });
 });
 
 app.get('/auth/twitter',
@@ -104,9 +119,12 @@ app.get('/logout', function(req, res){
 });
 
 var server = http.createServer(app).listen(app.get('port'), function(){
-  io.listen(server);
   console.log('Express server listening on port ' + app.get('port'));
   console.log('Visit: http://127.0.0.1:' + app.get('port'));
 });
 
+// Socket.io setup
+var io = socketIo.listen(server)
+
+sockets(io);
 

@@ -7,16 +7,20 @@
     "npm": "1.2.x"
   },
   "dependencies": {
-    "express": "3.3.x",
-    "ejs": "0.7.x",
+    "express": "3.0.3",
+    "jade": "*",
     "express-partials": "0.1.x",
     "node-sass": "0.5.x",
     "passport": "0.1.x",
     "passport-twitter": "0.1.x",
     "mongoose": "3.6.x",
+    "connect-mongo": "*",
+    "connect-assets": "*",
     "socket.io": "0.9.x",
     "ntwitter": "git://github.com/rajeshsegu/ntwitter.git#search",
     "lodash": "1.3.x",
+    "socket.io": "*",
+    "socket.io-client": "*",
     "async": "0.2.x"
   },
   "scripts": {

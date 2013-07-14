@@ -1,0 +1,17 @@
+doctype 5
+html
+  head
+    title Barcamp6
+    link(href='/stylesheets/style.css', rel='stylesheet', type='text/css')
+  body
+    header
+      if user
+        a(href='/') Home
+        a(href='/account') Account
+        a(href='/logout') Log Out
+      else
+        a(href='/') Home
+        a(href='/login') Log In
+    .row.container-fluid
+      block content
+  !=js('client')
