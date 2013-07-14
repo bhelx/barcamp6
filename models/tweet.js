@@ -21,5 +21,16 @@ TweetSchema.statics.build = function (twitter_obj) {
   return self;
 };
 
+
+TweetSchema.statics.tagStats = function (done) {
+  Tweet.aggregate(
+    { $project: { tags: 1 } },
+    { $unwind: "$tags" },
+    { $group: { _id: "$tags", count: { $sum: 1 } } },
+    { $sort: { tags: 1 } },
+    done
+  );
+};
+
 module.exports = mongoose.model('Tweet', TweetSchema);
 
