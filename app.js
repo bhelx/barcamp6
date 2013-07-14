@@ -89,6 +89,9 @@ app.get('/', function(req, res){
   res.render('index', { user: req.user });
 });
 
+app.get('/tag_stats', routes.tagStats);
+app.get('/leaderboard', routes.leaderboard);
+
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
   res.redirect('/login')
