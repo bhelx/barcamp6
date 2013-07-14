@@ -32,62 +32,86 @@ body{
   }
 
   #main { 
-    margin-top: 10px;
-    height: 93%;
+    height: 100%;
     width: 100%;
+    margin-left: 0;
+    transition: margin 300ms;
+    -webkit-transition: margin 300ms;
+    position: relative;
+
     .central-wrapper {
-      transition: margin 1s;
-      -webkit-transition: margin 1s;
-      margin-left: -270px;
       width: 97%;
       height: 100%;
       position: relative;
-      float: left;
+
       .most-recent {
-        border-radius: 5px;
-        border: 1px solid #ccc;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        width: 100%;
         height: 100%;
-        width: 70%;
+        background: #39b54a;
+        color: white;
+
         .main-tag {
-          margin: -20px 0 0 0;
+          font-size: 6em;
+          margin: -20px 0 0;
           height: 100%;
           top: 50%;
-          left: 10%;
+          left: 20%;
           position: absolute;
         }
       }
       .leaders {
-        height: auto;
-        width: 25%;
-        border: 1px solid #ccc;
-        border-radius: 5px;
+        position: absolute;
+        top: 1em;
+        right: 1em;
+        width: 20%;
+        color: white;
+        color: rgba(255,255,255,0.5);
+
+        ul {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+        }
+
+        h4 {
+          font-size: .85em;
+          text-transform: uppercase;
+          font-weight: 300;
+          letter-spacing: 1px;
+        }
       }
     }
     #tweets-wrapper {
-      position: relative;
-      float: left;
-      height: 95%;
-      padding: 5px 10px;
-      width: 300px;
-      border-radius: 5px;
-      #gradient > .horizontal(#646,#333);
-      margin-right: -320px;
+      position: absolute;
+      height: 100%;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      overflow: scroll;
+      box-sizing: border-box;
+      padding: 1em;
+      width: 360px;
+      margin-right: -340px;
+      color: #333;
       .tweets {
         position: relative;
         left: 35px;
-        * {
-          color: #fff;
-        }
       }
     }
     #tweets-wrapper:hover {
       cursor: pointer;
     }
   }
+  #main {
+    margin-left: -360px;
+  }
   #main.collapsed {
-    .central-wrapper {
-      margin-left: 0px;
-    }
+    margin-left: 0;
   }
 }
 

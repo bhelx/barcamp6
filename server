@@ -1,0 +1,1 @@
+./node_module/supervisor/bin/supervisor -w ./ -e js,jade,less app.js

@@ -1,13 +1,13 @@
 extends layout
 block content
   .central-wrapper
-    .span9.most-recent
+    .most-recent
       - var mainTag = '#foo-bar'
       include most-recent
-    .span4.leaders
+    .leaders
       include leaders
   #tweets-wrapper
-    i.icon-arrow-left.icon-white
+    i.icon-arrow-left.icon-black
     .tweets
       h4 latest tweets
       hr
