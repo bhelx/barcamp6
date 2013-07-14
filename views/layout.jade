@@ -6,16 +6,9 @@ html
   body
     .nav.nav-fixed-top
       ul
-        if user
-          a.brand(href='/') Home
-          a.brand(href='/account') Account
-          a.brand(href='/logout') Log Out
-        else
-          a.brand(href='/') Home
-          a.brand(href='/login') Log In
+        a.brand(href='/') Home
         a.brand(href='/about') About
         a.brand(href='http://nowinnola.blogspot.com/', target="_blank") Blog
-      .nav-stripe
     #main.collapsed
       block content
   != jadeTemplates()        
